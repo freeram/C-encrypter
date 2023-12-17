@@ -1,8 +1,10 @@
 #ifndef FILE_READER_H
 #define FILE_READER_H
-
-#include <stddef.h>
+#include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+
+#define INITIAL_CAPACITY 1024
 
 // Reads data from a file and returns a pointer to the data buffer.
 // The size of the data is stored in 'data_size'.
