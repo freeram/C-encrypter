@@ -145,9 +145,9 @@ static uint32_t S[4][256] =
 			0x90d4f869, 0xa65cdea0, 0x3f09252d, 0xc208e69f, 0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6
 		}};
 
-static void swap(uint32_t **p1, uint32_t **p2) 
+static void swap(uint32_t *p1, uint32_t *p2)
 {
-    uint32_t *temp = *p1;
+    uint32_t temp = *p1;
     *p1 = *p2;
     *p2 = temp;
 }
@@ -164,9 +164,9 @@ static void blowfish_encrypt(uint32_t *L, uint32_t *R)
     {
         *L = *L ^ P[r];
         *R = f(*L) ^ *R;
-        swap(&L, &R);
+        swap(L, R);
     }
-    swap(&L, &R);
+    swap(L, R);
     *R = *R ^ P[16];
     *L = *L ^ P[17];
 }
@@ -177,9 +177,9 @@ static void blowfish_decrypt(uint32_t *L, uint32_t *R)
     {
         *L = *L ^ P[r];
         *R = f(*L) ^ *R;
-        swap(&L, &R);
+        swap(L, R);
     }
-    swap(&L, &R);
+    swap(L, R);
     *R = *R ^ P[1];
     *L = *L ^ P[0];
 }
@@ -218,12 +218,20 @@ void blowfish_init(uint8_t *key, size_t key_len)
     }
 }
 
-void encrypt(uint8_t *buffer, size_t buffer_size)
-{
-    // Implement
+void encrypt(uint8_t *buffer, size_t buffer_size) {
+    for (size_t i = 0; i < buffer_size; i += 8) {
+        uint32_t *L = (uint32_t *)(buffer + i);
+        uint32_t *R = (uint32_t *)(buffer + i + 4);
+
+        blowfish_encrypt(L, R);
+    }
 }
 
-void decrypt(uint8_t *buffer, size_t buffer_size)
-{
-    // Implement
+void decrypt(uint8_t *buffer, size_t buffer_size) {
+    for (size_t i = 0; i < buffer_size; i += 8) {
+        uint32_t *L = (uint32_t *)(buffer + i);
+        uint32_t *R = (uint32_t *)(buffer + i + 4);
+
+        blowfish_decrypt(L, R);
+    }
 }
