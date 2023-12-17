@@ -9,12 +9,11 @@ ifeq ($(DEBUG),1)
     CFLAGS += -g
 endif
 
-SRC=src
+SRCDIR=src
 OBJDIR=obj
 BINDIR=bin
 
-CFILES := $(SRC)/main.c $(SRC)/filereader.c $(SRC)/encryption.c
-OBJECTS := $(patsubst $(SRC)/%.c, $(OBJDIR)/%.o, $(CFILES))
+OBJECTS := $(patsubst %.c, $(OBJDIR)/%.o, $(notdir $(wildcard $(SRCDIR)/*.c)))
 
 BINARY=encrypt
 
@@ -23,7 +22,7 @@ all: $(BINDIR)/$(BINARY)
 $(BINDIR)/$(BINARY): $(OBJECTS)
 	$(CC) -o $@ $^
 
-$(OBJDIR)/%.o: $(SRC)/%.c
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
