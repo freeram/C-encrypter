@@ -37,6 +37,12 @@ encrypt
 *.x86_64
 *.hex
 
+# Input/Output files
+*.txt
+*.jpg
+*.jpeg
+*.png
+
 # Debug files
 *.dSYM/
 *.su
