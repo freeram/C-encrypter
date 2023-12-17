@@ -1,6 +1,6 @@
 CC=gcc
 HDRS=include
-INCDIRS=-I. -I$(HDRS)
+INCDIRS=-I$(HDRS)
 OPT=-O0
 CFLAGS=-Wall -Wextra $(INCDIRS) $(OPT)
 
