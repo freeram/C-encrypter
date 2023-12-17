@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "encryption.h"
 #include "filereader.h"
 
@@ -34,5 +33,6 @@ int main(int argc, char *argv[])
     }
     printf("\n");
 
+    free(buffer);
     return 0;
 }
