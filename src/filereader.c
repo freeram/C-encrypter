@@ -33,6 +33,12 @@ uint8_t* read_stdin_data(size_t* buffer_size)
         buffer[size++] = (uint8_t)ch;
     }
 
+    // Blowfish takes 64-bit blocks for input
+    // Buffer must be padded until it is a multiple of 64 bits
+    while (size % 8 != 0) {
+        size++;
+    }
+
     // Resize the buffer to the actual data size
     uint8_t* final_buffer = realloc(buffer, size);
     if (!final_buffer) {
