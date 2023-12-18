@@ -118,7 +118,7 @@ int write_file_data(const char *filename, const char *data)
     if (file == NULL)
     {
         perror("Error opening file");
-        return 0; // Return 0 to indicate failure
+        return 1; // failure
     }
 
     // Write data to the file
@@ -126,10 +126,10 @@ int write_file_data(const char *filename, const char *data)
     {
         perror("Error writing to file");
         fclose(file);
-        return 0; // Return 0 to indicate failure
+        return 1; // failure
     }
 
     // Close the file and return 1 to indicate success
     fclose(file);
-    return 1;
+    return 0;
 }
