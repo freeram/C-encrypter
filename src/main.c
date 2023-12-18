@@ -102,21 +102,19 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Blowfish takes keys that are a minimum of 32 bits
+    // Blowfish takes keys that are a minimum of 32 bits and a maximum of 448 bits
     if (key_len < 4)
     {
-        size_t old_len = key_len;
-        while (key_len < 4)
-        {
-            key_len++;
-        }
-        if (pad_buffer(&key, old_len, key_len))
-        {
-            printf("Error: realloc failure in pad_buffer. Exiting\n");
-            exit(1);
-        }
+        printf("Key length must be at least 4 characters. Exiting\n");
+        return 1;
+    }
+    if (key_len > 56)
+    {
+        printf("Key length must not exceed 56 characters. Exiting\n");
+        return 1;
     }
 
+    #ifdef DEBUG
     printf("Key:\n");
     for (size_t i = 0; i < key_len; i++)
     {
@@ -132,6 +130,7 @@ int main(int argc, char *argv[])
     printf("\n");
 
     printf("Key len: %ld\n", key_len);
+    #endif
 
     blowfish_init(key, key_len);
 
@@ -160,6 +159,7 @@ int main(int argc, char *argv[])
         }
     }
 
+    #ifdef DEBUG
     printf("Buffer size: %ld ; Buffer size in bits: %ld\n", buffer_size, buffer_size*8);
 
     printf("Original buffer:\n");
@@ -169,15 +169,18 @@ int main(int argc, char *argv[])
     }
     printf("\n");
 
+    printf("Encrypted buffer:\n");
+    #endif
+
     encrypt(buffer, buffer_size);
 
-    printf("Encrypted buffer:\n");
     for (size_t i = 0; i < buffer_size; i++)
     {
         printf("%02x ", buffer[i]);
     }
     printf("\n");
 
+    #ifdef DEBUG
     decrypt(buffer, buffer_size);
 
     printf("Decrypted buffer:\n");
@@ -186,6 +189,7 @@ int main(int argc, char *argv[])
         printf("%02x ", buffer[i]);
     }
     printf("\n");
+    #endif
 
     free(buffer);
     free(key);
