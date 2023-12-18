@@ -73,12 +73,12 @@ int main(int argc, char *argv[])
     if (gflag && dflag)
     {
         printf("Error: Cannot generate key and decrypt at the same time. Exiting\n");
-        return 0;
+        return 1;
     }
     if (gflag && (keyvalue != NULL))
     {
         printf("Error: Cannot generate key and parse key at the same time. Exiting\n");
-        return 0;
+        return 1;
     }
 
     //    uint8_t *key = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}; // Example key
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
         if (pad_buffer(&buffer, old_size, buffer_size))
         {
             printf("Error: realloc failure in pad_buffer. Exiting\n");
-            exit(1);
+            return 1;
         }
     }
 
@@ -193,5 +193,6 @@ int main(int argc, char *argv[])
 
     free(buffer);
     free(key);
+
     return 0;
 }
