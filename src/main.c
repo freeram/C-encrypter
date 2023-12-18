@@ -96,11 +96,17 @@ int main(int argc, char *argv[])
         key = read_file_data("key.txt", &key_len);
     }
 
+    if (key == NULL)
+    {
+        printf("Error: reading key from file failed. Exiting\n");
+        return 1;
+    }
+
     // Blowfish takes keys that are a minimum of 32 bits
-    if (key_len < 32)
+    if (key_len < 4)
     {
         size_t old_len = key_len;
-        while (key_len < 32)
+        while (key_len < 4)
         {
             key_len++;
         }
@@ -126,12 +132,17 @@ int main(int argc, char *argv[])
     printf("\n");
 
     printf("Key len: %ld\n", key_len);
-    printf("\n");
 
     blowfish_init(key, key_len);
 
     size_t buffer_size;
     uint8_t *buffer = read_stdin_data(&buffer_size);
+
+    if (buffer == NULL)
+    {
+        printf("Error: reading stdin failed. Exiting\n");
+        return 1;
+    }
 
     // Blowfish takes 64-bit blocks for input
     // Buffer must be padded until it is a multiple of 64 bits
@@ -149,7 +160,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    printf("Buffer size: %ld\n", buffer_size);
+    printf("Buffer size: %ld ; Buffer size in bits: %ld\n", buffer_size, buffer_size*8);
 
     printf("Original buffer:\n");
     for (size_t i = 0; i < buffer_size; i++)
