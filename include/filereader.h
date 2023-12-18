@@ -11,10 +11,12 @@
 
 // Reads data from stdin and returns a pointer to the data buffer.
 // The size of the data is stored in 'buffer_size'.
+// Returns NULL on error
 uint8_t *read_stdin_data(size_t *buffer_size);
 
 // Reads data from a file and returns a pointer to the data buffer.
 // The size of the data is stored in 'buffer_size'.
+// Returns NULL on error
 uint8_t *read_file_data(const char *filename, size_t *buffer_size);
 
 // Writes data to a file and returns 1 if successful
