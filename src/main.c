@@ -46,15 +46,22 @@ void getflags(int argc, char *argv[], int *gflag, int *dflag, char **keyvalue)
 int main(int argc, char *argv[])
 {
     // Getting flags
-    int gflag = 0;
-    int dflag = 0;
-    char *keyvalue = NULL;
+    int gflag = 0;  // -g: Generate a key flag
+    int dflag = 0;  // -d: Decrypt flag
+    char *keyvalue = NULL;  // -k: Get key from CLI flag
 
     getflags(argc, argv, &gflag, &dflag, &keyvalue);
 
-    printf("gflag = %d, dflag = %d, keyvalue = %s\n\n",
-           gflag, dflag, keyvalue);
-    //
+    printf("gflag = %d, dflag = %d, keyvalue = %s\n\n", gflag, dflag, keyvalue);
+    
+    if (gflag && dflag) {
+        printf("Error: Cannot generate key and decrypt at the same time. Exiting\n");
+        return 0;
+    }
+    if (gflag && (keyvalue != NULL)) {
+        printf("Error: Cannot generate key and parse key at the same time. Exiting\n");
+        return 0;
+    }
 
     uint8_t key[] = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}; // Example key
     size_t key_len = sizeof(key) / sizeof(key[0]);
@@ -64,17 +71,19 @@ int main(int argc, char *argv[])
     size_t buffer_size;
     uint8_t *buffer = read_stdin_data(&buffer_size);
 
+    printf("Buffer size: %ld\n", buffer_size);
+
     printf("Original buffer:\n");
-    for (size_t i = 0; i < buffer_size - 1; i++)
+    for (size_t i = 0; i < buffer_size; i++)
     {
-        printf("%c", buffer[i]);
+        printf("%02x ", buffer[i]);
     }
     printf("\n");
 
     encrypt(buffer, buffer_size);
 
     printf("Encrypted buffer:\n");
-    for (size_t i = 0; i < buffer_size - 1; i++)
+    for (size_t i = 0; i < buffer_size; i++)
     {
         printf("%02x ", buffer[i]);
     }
@@ -83,9 +92,9 @@ int main(int argc, char *argv[])
     decrypt(buffer, buffer_size);
 
     printf("Decrypted buffer:\n");
-    for (size_t i = 0; i < buffer_size - 1; i++)
+    for (size_t i = 0; i < buffer_size; i++)
     {
-        printf("%c", buffer[i]);
+        printf("%02x ", buffer[i]);
     }
     printf("\n");
 
