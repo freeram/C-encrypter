@@ -6,7 +6,7 @@ CFLAGS=-Wall -Wextra $(INCDIRS) $(OPT)
 
 DEBUG ?=
 ifeq ($(DEBUG),1)
-    CFLAGS += -g
+    CFLAGS += -g -DDEBUG
 endif
 
 SRCDIR=src
