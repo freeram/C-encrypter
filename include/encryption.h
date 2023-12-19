@@ -7,9 +7,7 @@
 
 // Determining endianness
 #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define IS_BIG_ENDIAN 1
-#else
-#define IS_BIG_ENDIAN 0
+#define IS_BIG_ENDIAN
 #endif
 
 void blowfish_init(uint8_t *key, size_t key_len);
