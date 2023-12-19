@@ -44,17 +44,17 @@ void getflags(int argc, char *argv[], int *gflag, int *dflag, char **keyvalue)
         printf("Non-option argument %s\n", argv[index]);
 }
 
-// PKCS#5 Padding Scheme
-int pad_buffer(uint8_t **buffer, size_t old_len, size_t new_len)
+int pad_buffer_pkcs5(uint8_t **buffer, size_t old_len, size_t new_len)
 {
-
     uint8_t *new_buffer = realloc(*buffer, new_len);
+
     if (!new_buffer)
     {
         return 1;
     }
 
-    // Initialize the new portion of the buffer to 0
+    // Initialize the new portion of the buffer according to amount of bytes padded
+    // e.g. if 3 bytes must be padded, fill each with 0x03
     memset(new_buffer + old_len, new_len - old_len, new_len - old_len);
 
     *buffer = new_buffer;
@@ -81,9 +81,6 @@ int main(int argc, char *argv[])
         printf("Error: Cannot generate key and parse key at the same time. Exiting\n");
         return 1;
     }
-
-    //    uint8_t *key = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}; // Example key
-    //    size_t key_len = sizeof(key) / sizeof(key[0]);
 
     uint8_t *key;
     size_t key_len;
@@ -153,7 +150,7 @@ int main(int argc, char *argv[])
         {
             buffer_size++;
         }
-        if (pad_buffer(&buffer, old_size, buffer_size))
+        if (pad_buffer_pkcs5(&buffer, old_size, buffer_size))
         {
             printf("Error: realloc failure in pad_buffer. Exiting\n");
             return 1;
