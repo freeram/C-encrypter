@@ -145,7 +145,7 @@ static uint32_t S[4][256] =
 			0x90d4f869, 0xa65cdea0, 0x3f09252d, 0xc208e69f, 0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6
 		}};
 
-static uint32_t swapEndian(uint32_t val)
+static uint32_t maybe_swap_endian(uint32_t val)
 {
 #if IS_BIG_ENDIAN
 	return val;
@@ -234,13 +234,13 @@ void encrypt(uint8_t *buffer, size_t buffer_size)
 		uint32_t *L = (uint32_t *)(buffer + i);
 		uint32_t *R = (uint32_t *)(buffer + i + 4);
 
-		*L = swapEndian(*L); // Convert to big-endian if little endian
-		*R = swapEndian(*R);
+		*L = maybe_swap_endian(*L); // Convert to big-endian if little endian
+		*R = maybe_swap_endian(*R);
 
 		blowfish_encrypt(L, R);
 
-		*L = swapEndian(*L); // Convert back to little-endian if had to swap
-		*R = swapEndian(*R);
+		*L = maybe_swap_endian(*L); // Convert back to little-endian if had to swap
+		*R = maybe_swap_endian(*R);
 	}
 }
 
@@ -251,12 +251,12 @@ void decrypt(uint8_t *buffer, size_t buffer_size)
 		uint32_t *L = (uint32_t *)(buffer + i);
 		uint32_t *R = (uint32_t *)(buffer + i + 4);
 
-		*L = swapEndian(*L); // Convert to big-endian if little endian
-		*R = swapEndian(*R);
+		*L = maybe_swap_endian(*L); // Convert to big-endian if little endian
+		*R = maybe_swap_endian(*R);
 
 		blowfish_decrypt(L, R);
 
-		*L = swapEndian(*L); // Convert back to little-endian if had to swap
-		*R = swapEndian(*R);
+		*L = maybe_swap_endian(*L); // Convert back to little-endian if had to swap
+		*R = maybe_swap_endian(*R);
 	}
 }
