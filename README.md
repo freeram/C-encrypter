@@ -26,6 +26,7 @@ For sensitive data, consider using openssl and AES.
 | `-g`       | Generates a new encryption key. When this flag is used, the program will create a new key and output it in a file. [WIP]                                                                   |
 | `-k <path>`| Specifies the path to the key file. If `-k` is unspecified, the program looks for key in `key.txt` in the current directory.                                                               |
 | `-d`       | Enables decryption mode. Use this flag to decrypt input using the specified key. If `-k` is unspecified, program looks for `key.txt` in the current directory.                             |
+| `-h`       | Enables hex Input/Output mode. Use this flag to decrypt input using the specified key, but the input will be read in hex, and the output will be in hex.                      |
 
 
 ### Example Usage
