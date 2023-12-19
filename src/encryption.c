@@ -150,10 +150,7 @@ static uint32_t swapEndian(uint32_t val)
 #if IS_BIG_ENDIAN
 	return val;
 #else
-	return ((val >> 24) & 0xff) |	   // Move byte 3 to byte 0
-		   ((val << 8) & 0xff0000) |   // Move byte 1 to byte 2
-		   ((val >> 8) & 0xff00) |	   // Move byte 2 to byte 1
-		   ((val << 24) & 0xff000000); // Move byte 0 to byte 3
+	return __bswap_32 (val);
 #endif
 }
 
