@@ -1,6 +1,8 @@
 # C-encrypter
 
 Encryption used: [Blowfish](https://en.wikipedia.org/wiki/Blowfish_(cipher))
+Padding scheme: PKCS#5
+Cipher mode: ECB
 
 ## Installation
 
