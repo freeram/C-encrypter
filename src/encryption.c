@@ -226,14 +226,14 @@ void encrypt(uint8_t *buffer, size_t buffer_size)
 		uint32_t *L = (uint32_t *)(buffer + i);
 		uint32_t *R = (uint32_t *)(buffer + i + 4);
 
-		#if !defined(IS_BIG_ENDIAN)  // Swapping little-endian to big-endian
+		#ifndef IS_BIG_ENDIAN  // Swapping little-endian to big-endian
 		*L = __bswap_32(*L);
 		*R = __bswap_32(*R);
 		#endif
 
 		blowfish_encrypt(L, R);
 
-		#if !defined(IS_BIG_ENDIAN)  // Swapping back to little-endian
+		#ifndef IS_BIG_ENDIAN  // Swapping back to little-endian
 		*L = __bswap_32(*L);
 		*R = __bswap_32(*R);
 		#endif
@@ -247,14 +247,14 @@ void decrypt(uint8_t *buffer, size_t buffer_size)
 		uint32_t *L = (uint32_t *)(buffer + i);
 		uint32_t *R = (uint32_t *)(buffer + i + 4);
 
-		#if !defined(IS_BIG_ENDIAN)
+		#ifndef IS_BIG_ENDIAN
 		*L = __bswap_32(*L);
 		*R = __bswap_32(*R);
 		#endif
 
 		blowfish_decrypt(L, R);
 
-		#if !defined(IS_BIG_ENDIAN)
+		#ifndef IS_BIG_ENDIAN
 		*L = __bswap_32(*L);
 		*R = __bswap_32(*R);
 		#endif
