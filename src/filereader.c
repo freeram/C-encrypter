@@ -33,7 +33,7 @@ uint8_t *read_stdin_data(size_t *buffer_size)
     }
 
     // Getting rid of 0x0a at end of file (linefeed)
-    if (size > 0 && buffer[size-1] == '\n')
+    if (size > 0 && buffer[size - 1] == '\n')
     {
         size--;
     }
@@ -92,10 +92,10 @@ uint8_t *read_file_data(const char *filename, size_t *buffer_size)
     fclose(file);
 
     // Getting rid of 0x0a at end of file (linefeed)
-    if (size > 0 && buffer[size-1] == 0x0a)
+    if (size > 0 && buffer[size - 1] == 0x0a)
     {
         size--;
-        uint8_t* new_buffer = realloc(buffer, size);
+        uint8_t *new_buffer = realloc(buffer, size);
         if (!new_buffer)
         {
             free(buffer);
@@ -129,7 +129,7 @@ int write_file_data(const char *filename, const char *data)
         return 1; // failure
     }
 
-    // Close the file and return 1 to indicate success
+    // Close the file and return 0 to indicate success
     fclose(file);
     return 0;
 }

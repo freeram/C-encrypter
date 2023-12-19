@@ -145,118 +145,121 @@ static uint32_t S[4][256] =
 			0x90d4f869, 0xa65cdea0, 0x3f09252d, 0xc208e69f, 0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6
 		}};
 
-
 static uint32_t swapEndian(uint32_t val)
 {
-	#if IS_BIG_ENDIAN
-		return val;
-	#else
-		return ((val >> 24) & 0xff) |   // Move byte 3 to byte 0
-			((val << 8) & 0xff0000) |   // Move byte 1 to byte 2
-			((val >> 8) & 0xff00) |     // Move byte 2 to byte 1
-			((val << 24) & 0xff000000); // Move byte 0 to byte 3
-	#endif
+#if IS_BIG_ENDIAN
+	return val;
+#else
+	return ((val >> 24) & 0xff) |	   // Move byte 3 to byte 0
+		   ((val << 8) & 0xff0000) |   // Move byte 1 to byte 2
+		   ((val >> 8) & 0xff00) |	   // Move byte 2 to byte 1
+		   ((val << 24) & 0xff000000); // Move byte 0 to byte 3
+#endif
 }
 
 static void swap(uint32_t *p1, uint32_t *p2)
 {
-    uint32_t temp = *p1;
-    *p1 = *p2;
-    *p2 = temp;
+	uint32_t temp = *p1;
+	*p1 = *p2;
+	*p2 = temp;
 }
 
 static uint32_t f(uint32_t x)
 {
-    uint32_t h = S[0][x >> 24] + S[1][x >> 16 & 0xff];
-    return (h ^ S[2][x >> 8 & 0xff]) + S[3][x & 0xff];
+	uint32_t h = S[0][x >> 24] + S[1][x >> 16 & 0xff];
+	return (h ^ S[2][x >> 8 & 0xff]) + S[3][x & 0xff];
 }
 
 static void blowfish_encrypt(uint32_t *L, uint32_t *R)
 {
-    for (short r = 0; r < 16; r++)
-    {
-        *L = *L ^ P[r];
-        *R = f(*L) ^ *R;
-        swap(L, R);
-    }
-    swap(L, R);
-    *R = *R ^ P[16];
-    *L = *L ^ P[17];
+	for (short r = 0; r < 16; r++)
+	{
+		*L = *L ^ P[r];
+		*R = f(*L) ^ *R;
+		swap(L, R);
+	}
+	swap(L, R);
+	*R = *R ^ P[16];
+	*L = *L ^ P[17];
 }
 
 static void blowfish_decrypt(uint32_t *L, uint32_t *R)
 {
-    for (short r = 17; r > 1; r--)
-    {
-        *L = *L ^ P[r];
-        *R = f(*L) ^ *R;
-        swap(L, R);
-    }
-    swap(L, R);
-    *R = *R ^ P[1];
-    *L = *L ^ P[0];
+	for (short r = 17; r > 1; r--)
+	{
+		*L = *L ^ P[r];
+		*R = f(*L) ^ *R;
+		swap(L, R);
+	}
+	swap(L, R);
+	*R = *R ^ P[1];
+	*L = *L ^ P[0];
 }
 
 void blowfish_init(uint8_t *key, size_t key_len)
 {
-    /* initialize P box w/ key*/
-    uint32_t k;
-    for (short i = 0, p = 0; i < 18; i++)
-    {
-        k = 0x00;
-        for (short j = 0; j < 4; j++)
-        {
-            k = (k << 8) | (uint8_t)key[p];
-            p = (p + 1) % key_len;
-        }
-        P[i] ^= k;
-    }
+	/* initialize P box w/ key*/
+	uint32_t k;
+	for (short i = 0, p = 0; i < 18; i++)
+	{
+		k = 0x00;
+		for (short j = 0; j < 4; j++)
+		{
+			k = (k << 8) | (uint8_t)key[p];
+			p = (p + 1) % key_len;
+		}
+		P[i] ^= k;
+	}
 
-    /* blowfish key expansion (521 iterations) */
-    uint32_t l = 0x00, r = 0x00;
-    for (short i = 0; i < 18; i += 2)
-    {
-        blowfish_encrypt(&l, &r);
-        P[i] = l;
-        P[i + 1] = r;
-    }
-    for (short i = 0; i < 4; i++)
-    {
-        for (short j = 0; j < 256; j += 2)
-        {
-            blowfish_encrypt(&l, &r);
-            S[i][j] = l;
-            S[i][j + 1] = r;
-        }
-    }
+	/* blowfish key expansion (521 iterations) */
+	uint32_t l = 0x00, r = 0x00;
+	for (short i = 0; i < 18; i += 2)
+	{
+		blowfish_encrypt(&l, &r);
+		P[i] = l;
+		P[i + 1] = r;
+	}
+	for (short i = 0; i < 4; i++)
+	{
+		for (short j = 0; j < 256; j += 2)
+		{
+			blowfish_encrypt(&l, &r);
+			S[i][j] = l;
+			S[i][j + 1] = r;
+		}
+	}
 }
 
-void encrypt(uint8_t *buffer, size_t buffer_size) {
-    for (size_t i = 0; i < buffer_size; i += 8) {
-        uint32_t *L = (uint32_t *)(buffer + i);
-        uint32_t *R = (uint32_t *)(buffer + i + 4);
+void encrypt(uint8_t *buffer, size_t buffer_size)
+{
+	for (size_t i = 0; i < buffer_size; i += 8)
+	{
+		uint32_t *L = (uint32_t *)(buffer + i);
+		uint32_t *R = (uint32_t *)(buffer + i + 4);
 
-        *L = swapEndian(*L); // Convert to big-endian if little endian
-        *R = swapEndian(*R);
+		*L = swapEndian(*L); // Convert to big-endian if little endian
+		*R = swapEndian(*R);
 
-        blowfish_encrypt(L, R);
+		blowfish_encrypt(L, R);
 
-        *L = swapEndian(*L); // Convert back to little-endian if had to swap
-        *R = swapEndian(*R);
-    }
+		*L = swapEndian(*L); // Convert back to little-endian if had to swap
+		*R = swapEndian(*R);
+	}
 }
 
-void decrypt(uint8_t *buffer, size_t buffer_size) {
-    for (size_t i = 0; i < buffer_size; i += 8) {
-        uint32_t *L = (uint32_t *)(buffer + i);
-        uint32_t *R = (uint32_t *)(buffer + i + 4);
+void decrypt(uint8_t *buffer, size_t buffer_size)
+{
+	for (size_t i = 0; i < buffer_size; i += 8)
+	{
+		uint32_t *L = (uint32_t *)(buffer + i);
+		uint32_t *R = (uint32_t *)(buffer + i + 4);
 
-        *L = swapEndian(*L); // Convert to big-endian if little endian
-        *R = swapEndian(*R);
+		*L = swapEndian(*L); // Convert to big-endian if little endian
+		*R = swapEndian(*R);
 
-        blowfish_decrypt(L, R);
+		blowfish_decrypt(L, R);
 
-        *L = swapEndian(*L); // Convert back to little-endian if had to swap
-        *R = swapEndian(*R);
-    }
+		*L = swapEndian(*L); // Convert back to little-endian if had to swap
+		*R = swapEndian(*R);
+	}
 }

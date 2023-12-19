@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     // Getting flags
     int gflag = 0;         // -g: Generate a key flag
     int dflag = 0;         // -d: Decrypt flag
-    char *keyvalue = NULL; // -k: Get key from CLI flag
+    char *keyvalue = NULL; // -k: Get key from CLI flag [path to key file]
 
     getflags(argc, argv, &gflag, &dflag, &keyvalue);
 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    #ifdef DEBUG
+#ifdef DEBUG
     printf("Key:\n");
     for (size_t i = 0; i < key_len; i++)
     {
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     printf("\n");
 
     printf("Key len: %ld\n", key_len);
-    #endif
+#endif
 
     blowfish_init(key, key_len);
 
@@ -160,8 +160,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    #ifdef DEBUG
-    printf("Buffer size: %ld ; Buffer size in bits: %ld\n", buffer_size, buffer_size*8);
+#ifdef DEBUG
+    printf("Buffer size: %ld ; Buffer size in bits: %ld\n", buffer_size, buffer_size * 8);
 
     printf("Original buffer:\n");
     for (size_t i = 0; i < buffer_size; i++)
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     printf("\n");
 
     printf("Encrypted buffer:\n");
-    #endif
+#endif
 
     encrypt(buffer, buffer_size);
 
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
     }
     printf("\n");
 
-    #ifdef DEBUG
+#ifdef DEBUG
     decrypt(buffer, buffer_size);
 
     printf("Decrypted buffer:\n");
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
         printf("%02x ", buffer[i]);
     }
     printf("\n");
-    #endif
+#endif
 
     free(buffer);
     free(key);
