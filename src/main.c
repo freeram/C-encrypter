@@ -44,6 +44,7 @@ void getflags(int argc, char *argv[], int *gflag, int *dflag, char **keyvalue)
         printf("Non-option argument %s\n", argv[index]);
 }
 
+// PKCS#5 Padding Scheme
 int pad_buffer(uint8_t **buffer, size_t old_len, size_t new_len)
 {
 
@@ -54,7 +55,7 @@ int pad_buffer(uint8_t **buffer, size_t old_len, size_t new_len)
     }
 
     // Initialize the new portion of the buffer to 0
-    memset(new_buffer + old_len, 0, new_len - old_len);
+    memset(new_buffer + old_len, new_len - old_len, new_len - old_len);
 
     *buffer = new_buffer;
 
@@ -144,11 +145,11 @@ int main(int argc, char *argv[])
     }
 
     // Blowfish takes 64-bit blocks for input
-    // Buffer must be padded until it is a multiple of 64 bits
-    if (buffer_size % 8 != 0)
+    // Buffer must be padded with PKCS#5 until it is a multiple of 128 bits
+    if (buffer_size % 16 != 0)
     {
         size_t old_size = buffer_size;
-        while (buffer_size % 8 != 0)
+        while (buffer_size % 16 != 0)
         {
             buffer_size++;
         }
