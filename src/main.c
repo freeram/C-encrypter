@@ -7,14 +7,14 @@
 extern int optind, opterr, optopt;
 extern char *optarg;
 
-void getflags(int argc, char *argv[], int *gflag, int *dflag, char **keyvalue)
+void getflags(int argc, char *argv[], int *gflag, int *dflag, int *hflag, char **keydir)
 {
     int index;
     int c;
 
     opterr = 0;
 
-    while ((c = getopt(argc, argv, "gdk:")) != -1)
+    while ((c = getopt(argc, argv, "gdhk:")) != -1)
         switch (c)
         {
         case 'g':
@@ -23,8 +23,11 @@ void getflags(int argc, char *argv[], int *gflag, int *dflag, char **keyvalue)
         case 'd':
             *dflag = 1;
             break;
+        case 'h':
+            *hflag = 1;
+            break;
         case 'k':
-            *keyvalue = optarg;
+            *keydir = optarg;
             break;
         case '?':
             if (optopt == 'k')
@@ -65,18 +68,19 @@ int pad_buffer_pkcs5(uint8_t **buffer, size_t old_len, size_t new_len)
 int main(int argc, char *argv[])
 {
     // Getting flags
-    int gflag = 0;         // -g: Generate a key flag
-    int dflag = 0;         // -d: Decrypt flag
-    char *keyvalue = NULL; // -k: Get key from CLI flag [path to key file]
+    int gflag = 0;       // -g: Generate a key flag
+    int dflag = 0;       // -d: Decrypt flag
+    int hflag = 0;       // -h: Input/Output in hex flag [except key]
+    char *keydir = NULL; // -k: Get keydir from CLI flag [path to key file]
 
-    getflags(argc, argv, &gflag, &dflag, &keyvalue);
+    getflags(argc, argv, &gflag, &dflag, &hflag, &keydir);
 
     if (gflag && dflag)
     {
         printf("Error: Cannot generate key and decrypt at the same time. Exiting\n");
         return 1;
     }
-    if (gflag && (keyvalue != NULL))
+    if (gflag && (keydir != NULL))
     {
         printf("Error: Cannot generate key and parse key at the same time. Exiting\n");
         return 1;
@@ -85,9 +89,9 @@ int main(int argc, char *argv[])
     uint8_t *key;
     size_t key_len;
 
-    if (keyvalue != NULL)
+    if (keydir != NULL)
     {
-        key = read_file_data(keyvalue, &key_len);
+        key = read_file_data(keydir, &key_len);
     }
     else
     {
@@ -132,8 +136,16 @@ int main(int argc, char *argv[])
 
     blowfish_init(key, key_len);
 
+    uint8_t *buffer = NULL;
     size_t buffer_size;
-    uint8_t *buffer = read_stdin_data(&buffer_size);
+    
+    if (hflag)
+    {
+        buffer = read_stdin_data_hex(&buffer_size);
+    } else
+    {
+        buffer = read_stdin_data(&buffer_size);
+    }
 
     if (buffer == NULL)
     {
@@ -141,9 +153,16 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Blowfish takes 64-bit blocks for input
+    // Blowfish takes 64-bit blocks for input, we cannot decrypt otherwise
+    if (buffer_size % 8 != 0 && dflag)
+    {
+        printf("Input for blowfish decryption is not a multiple of 64 bits. Exiting\n");
+        return 1;
+    }
+
+    // If we're encrypting
     // Buffer must be padded with PKCS#5 until it is a multiple of 128 bits
-    if (buffer_size % 16 != 0)
+    if (buffer_size % 16 != 0 && !dflag)
     {
         size_t old_size = buffer_size;
         while (buffer_size % 16 != 0)
@@ -167,27 +186,23 @@ int main(int argc, char *argv[])
     }
     printf("\n");
 
-    printf("Encrypted buffer:\n");
+    printf("Modified buffer:\n");
 #endif
 
-    encrypt(buffer, buffer_size);
+    if (dflag)  // Decrypt flag
+    {
+        decrypt(buffer, buffer_size);
+    }
+    else 
+    {
+        encrypt(buffer, buffer_size);
+    }
 
     for (size_t i = 0; i < buffer_size; i++)
     {
         printf("%02x ", buffer[i]);
     }
     printf("\n");
-
-#ifdef DEBUG
-    decrypt(buffer, buffer_size);
-
-    printf("Decrypted buffer:\n");
-    for (size_t i = 0; i < buffer_size; i++)
-    {
-        printf("%02x ", buffer[i]);
-    }
-    printf("\n");
-#endif
 
     free(buffer);
     free(key);
