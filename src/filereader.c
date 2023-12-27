@@ -99,7 +99,7 @@ char *read_stdin_data_char(size_t *buffer_size)
     }
 
     final_buffer[size] = '\0'; // Null-terminate the string
-    *buffer_size = size; // Write the actual size of the data
+    *buffer_size = size;       // Write the actual size of the data
     return final_buffer;
 }
 
@@ -243,27 +243,4 @@ uint8_t *read_file_data(const char *filename, size_t *buffer_size)
     *buffer_size = size;
 
     return buffer;
-}
-
-int write_file_data(const char *filename, const char *data)
-{
-    // Open the file for writing
-    FILE *file = fopen(filename, "w");
-    if (file == NULL)
-    {
-        perror("Error opening file");
-        return 1; // failure
-    }
-
-    // Write data to the file
-    if (fprintf(file, "%s", data) < 0)
-    {
-        perror("Error writing to file");
-        fclose(file);
-        return 1; // failure
-    }
-
-    // Close the file and return 0 to indicate success
-    fclose(file);
-    return 0;
 }
