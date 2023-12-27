@@ -76,19 +76,19 @@ uint8_t *base64_decode(const char *input, size_t *output_length)
     for (size_t i = 0, j = 0; i < input_length;)
     {
         int sextet_a = base64_char_value(input[i]);
-        int sextet_b = i+1 < input_length ? base64_char_value(input[i+1]) : 0;
-        int sextet_c = i+2 < input_length ? base64_char_value(input[i+2]) : 0;
-        int sextet_d = i+3 < input_length ? base64_char_value(input[i+3]) : 0;
-        i += 4; // Increment index by 4
+        int sextet_b = base64_char_value(input[i + 1]);
+        int sextet_c = (input[i + 2] != '=') ? base64_char_value(input[i + 2]) : 0;
+        int sextet_d = (input[i + 3] != '=') ? base64_char_value(input[i + 3]) : 0;
+        i += 4;
 
-        uint32_t triple = (sextet_a << 3 * 6) + (sextet_b << 2 * 6) + (sextet_c << 1 * 6) + (sextet_d << 0 * 6);
+        uint32_t triple = (sextet_a << 18) + (sextet_b << 12) + (sextet_c << 6) + sextet_d;
 
         if (j < *output_length)
-            decoded[j++] = (triple >> 2 * 8) & 0xFF;
-        if (j < *output_length)
-            decoded[j++] = (triple >> 1 * 8) & 0xFF;
-        if (j < *output_length)
-            decoded[j++] = (triple >> 0 * 8) & 0xFF;
+            decoded[j++] = (triple >> 16) & 0xFF;
+        if (i < input_length - 4 || input[i - 2] != '=')
+            decoded[j++] = (triple >> 8) & 0xFF;
+        if (i < input_length - 4 || input[i - 1] != '=')
+            decoded[j++] = triple & 0xFF;
     }
 
     return decoded;
