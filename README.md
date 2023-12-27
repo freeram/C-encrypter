@@ -33,7 +33,7 @@ cd bin/
 
 | Flag           | Description                                                                                                                                                                      |
 |----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [no flags]     | Encrypts a file provided in stdin with key provided in `key.txt`. `key.txt` must be in the same directory as the binary.                                                         |
+| [no flags]     | Encrypts a file provided in stdin with key provided in `key.txt`. `key.txt` must be in the same directory as the binary. Outputs base64.                                         |
 | `-k <filename>`| Specifies the name of the key file. If `-k` is unspecified, the program looks for key in `key.txt` in the current directory.                                                     |
 | `-d`           | Enables decryption mode. Use this flag to decrypt input using the specified key. If `-k` is unspecified, program looks for `key.txt` in the current directory.                   |
 | `-h`           | Enables hex Input/Output mode. Use this flag to encrypt/decrypt input using the specified key (read in ASCII), but the input will be read in hex, and the output will be in hex. |
@@ -41,22 +41,22 @@ cd bin/
 
 ### Example Usage
 
-Encrypt a file input.txt using the key in key.txt:
+Encrypt a file input.txt using the key in key.txt (outputs base64):
 ```sh
 ./encrypt < input.txt
 ```
 
-Decrypt a file input.txt using the key in key.txt:
+Decrypt a file input.txt using the key in key.txt (input.txt must be valid base64):
 ```sh
 ./encrypt -d < input.txt
 ```
 
-Encrypt a file input.txt using the key in filename.txt:
+Encrypt a file input.txt using the key in filename.txt (outputs base64):
 ```sh
 ./encrypt -k filename.txt < input.txt
 ```
 
-Decrypt input.txt, while reading it in hex, using the key in key.txt (read in ASCII) and output hex:
+Decrypt input.txt, while reading it in hex, using the key in key.txt (read in ASCII) and output hex (input.txt must be valid hex):
 ```sh
 ./encrypt -h -d < input.txt
 ```
