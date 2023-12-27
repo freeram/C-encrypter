@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "padding.h"
-#include "encryption.h"
 #include "filereader.h"
+#include "encryption.h"
+#include "padding.h"
 #include "encoding.h"
 
 extern int optind, opterr, optopt;
@@ -78,11 +78,13 @@ int main(int argc, char *argv[])
     if (key_len < 4)
     {
         printf("Key length must be at least 4 characters. Exiting\n");
+        free(key);
         return 1;
     }
     if (key_len > 56)
     {
         printf("Key length must not exceed 56 characters. Exiting\n");
+        free(key);
         return 1;
     }
 
@@ -128,6 +130,7 @@ int main(int argc, char *argv[])
     if (buffer_size % 8 != 0 && dflag)
     {
         printf("Input for blowfish decryption is not a multiple of 64 bits. Exiting\n");
+        free(buffer);
         return 1;
     }
 
@@ -143,6 +146,7 @@ int main(int argc, char *argv[])
         if (pad_buffer_pkcs5(&buffer, old_size, buffer_size))
         {
             printf("Error: padding the buffer failed. Exiting\n");
+            free(buffer);
             return 1;
         }
     }
