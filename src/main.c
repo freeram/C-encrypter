@@ -3,6 +3,7 @@
 #include <string.h>
 #include "encryption.h"
 #include "filereader.h"
+#include "encoding.h"
 
 extern int optind, opterr, optopt;
 extern char *optarg;
@@ -198,14 +199,38 @@ int main(int argc, char *argv[])
         encrypt(buffer, buffer_size);
     }
 
-    for (size_t i = 0; i < buffer_size; i++)
+    // Our buffer is now in HEX
+    // This outputs hex and quits
+    if (hflag) 
     {
-        printf("%02x ", buffer[i]);
+        for (size_t i = 0; i < buffer_size; i++)
+        {
+            printf("%02x ", buffer[i]);
+        }
+        printf("\n");
+
+        free(buffer);
+        free(key);
+
+        return 0;
+    }
+
+    // This gets a base64 representation of our buffer
+    char *base64 = NULL;
+    size_t base64_len;
+    
+    base64 = base64_encode(buffer, buffer_size, &base64_len);
+
+    // Printing base64
+    for (size_t i = 0; i < base64_len; i++)
+    {
+        printf("%c", base64[i]);
     }
     printf("\n");
 
     free(buffer);
     free(key);
+    free(base64);
 
     return 0;
 }
