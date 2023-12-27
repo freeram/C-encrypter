@@ -16,22 +16,50 @@ For sensitive data, consider using openssl and AES.
 
 ## Installation
 
-[WIP]
+```sh
+git clone https://github.com/freeram/C-encrypter.git
+```
+```sh
+cd C-encrypter/
+```
+```sh
+make
+```
+```sh
+cd bin/
+```
 
 ## Usage
 
-| Flag &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;         | Description                                                                                   |
-|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [no flags] | Encrypts a file provided in stdin with key provided in `key.txt`. `key.txt` must be in the same directory as the binary.                                                                    |
-| `-k <filename>`| Specifies the name of the key file. If `-k` is unspecified, the program looks for key in `key.txt` in the current directory.                                                               |
-| `-d`       | Enables decryption mode. Use this flag to decrypt input using the specified key. If `-k` is unspecified, program looks for `key.txt` in the current directory.                             |
-| `-h`       | Enables hex Input/Output mode. Use this flag to encrypt/decrypt input using the specified key, but the input will be read in hex, and the output will be in hex.                      |
+| Flag           | Description                                                                                                                                                                      |
+|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [no flags]     | Encrypts a file provided in stdin with key provided in `key.txt`. `key.txt` must be in the same directory as the binary.                                                         |
+| `-k <filename>`| Specifies the name of the key file. If `-k` is unspecified, the program looks for key in `key.txt` in the current directory.                                                     |
+| `-d`           | Enables decryption mode. Use this flag to decrypt input using the specified key. If `-k` is unspecified, program looks for `key.txt` in the current directory.                   |
+| `-h`           | Enables hex Input/Output mode. Use this flag to encrypt/decrypt input using the specified key (read in ASCII), but the input will be read in hex, and the output will be in hex. |
 
 
 ### Example Usage
 
-[WIP]
+Encrypt a file input.txt using the key in key.txt:
+```sh
+./encrypt < input.txt
+```
 
+Decrypt a file input.txt using the key in key.txt:
+```sh
+./encrypt -d < input.txt
+```
+
+Encrypt a file input.txt using the key in filename.txt:
+```sh
+./encrypt -k filename.txt < input.txt
+```
+
+Decrypt input.txt, while reading it in hex, and output hex:
+```sh
+./encrypt -h -d < input.txt
+```
 
 ## Acknowledgments
 
