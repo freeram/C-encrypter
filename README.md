@@ -61,7 +61,7 @@ Decrypt input.txt, while reading it in hex, and output hex:
 ./encrypt -h -d < input.txt
 ```
 
-## Acknowledgments
+## Acknowledgements
 
 * Blowfish was adapted from pseudocode featured on the Wikipedia [article](https://en.wikipedia.org/wiki/Blowfish_(cipher)) for blowfish
 
