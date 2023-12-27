@@ -1,6 +1,6 @@
 #include "filereader.h"
 
-uint8_t *read_stdin_data(size_t *buffer_size)
+uint8_t *read_stdin_data_uint8t(size_t *buffer_size)
 {
     size_t capacity = INITIAL_CAPACITY;
     size_t size = 0; // Current size of the data in the buffer
@@ -51,6 +51,58 @@ uint8_t *read_stdin_data(size_t *buffer_size)
     return final_buffer;
 }
 
+char *read_stdin_data_char(size_t *buffer_size)
+{
+    size_t capacity = INITIAL_CAPACITY;
+    size_t size = 0; // Current size of the data in the buffer
+    char *buffer = malloc(capacity);
+    int ch;
+
+    if (!buffer)
+    {
+        perror("Malloc failed in read_stdin_data_char");
+        return NULL;
+    }
+
+    // Read character by character from stdin
+    while ((ch = getchar()) != EOF)
+    {
+        if (size >= capacity)
+        {
+            // Increase buffer size when capacity is exceeded
+            capacity *= 2;
+            char *new_buffer = realloc(buffer, capacity);
+            if (!new_buffer)
+            {
+                perror("Realloc failed in read_stdin_data_char: increasing buffer size");
+                free(buffer);
+                return NULL;
+            }
+            buffer = new_buffer;
+        }
+        buffer[size++] = (char)ch;
+    }
+
+    // Remove newline at end of stdin
+    if (size > 0 && buffer[size - 1] == '\n')
+    {
+        size--;
+    }
+
+    // Resize the buffer to the actual data size
+    char *final_buffer = realloc(buffer, size + 1);
+    if (!final_buffer)
+    {
+        free(buffer);
+        perror("Realloc failed in read_stdin_data_char: resizing buffer to actual data size");
+        return NULL;
+    }
+
+    final_buffer[size] = '\0'; // Null-terminate the string
+    *buffer_size = size; // Write the actual size of the data
+    return final_buffer;
+}
+
 // Helper function to convert a hex character to its numeric value
 static int hex2int(char ch)
 {
@@ -63,21 +115,27 @@ static int hex2int(char ch)
     return -1;
 }
 
-uint8_t *read_stdin_data_hex(size_t *buffer_size) {
+uint8_t *read_stdin_data_hex(size_t *buffer_size)
+{
     size_t capacity = INITIAL_CAPACITY;
     size_t size = 0; // Current size of the data in the buffer
     uint8_t *buffer = malloc(capacity);
     int ch1, ch2;
 
-    if (!buffer) {
+    if (!buffer)
+    {
         perror("Malloc failed in read_stdin_data_hex");
         return NULL;
     }
-    
+
     // Read a character from stdin
-    while ((ch1 = getchar()) != EOF) {
+    while ((ch1 = getchar()) != EOF)
+    {
         // If it's a space, skip
-        if (isspace(ch1)) {continue;}
+        if (isspace(ch1))
+        {
+            continue;
+        }
 
         // Read a second character, if it's a space or EOF, invalid input
         // Because "61 6" or "6 61" is not a valid hex sequence
@@ -88,17 +146,20 @@ uint8_t *read_stdin_data_hex(size_t *buffer_size) {
             return NULL;
         }
 
-        if (!isxdigit(ch1) || !isxdigit(ch2)) {
+        if (!isxdigit(ch1) || !isxdigit(ch2))
+        {
             perror("Invalid hexadecimal input");
             free(buffer);
             return NULL;
         }
 
-        if (size >= capacity) {
+        if (size >= capacity)
+        {
             // Increase buffer size when capacity is exceeded
             capacity *= 2;
             uint8_t *new_buffer = realloc(buffer, capacity);
-            if (!new_buffer) {
+            if (!new_buffer)
+            {
                 perror("Realloc failed in read_stdin_data_hex: increasing buffer size");
                 free(buffer);
                 return NULL;
@@ -113,7 +174,8 @@ uint8_t *read_stdin_data_hex(size_t *buffer_size) {
 
     // Resize the buffer to the actual data size
     uint8_t *final_buffer = realloc(buffer, size);
-    if (!final_buffer) {
+    if (!final_buffer)
+    {
         free(buffer);
         perror("Realloc failed in read_stdin_data_hex: resizing buffer to actual data size");
         return NULL;
