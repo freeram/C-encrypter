@@ -12,7 +12,7 @@ Works on both little-endian and big-endian systems
 
 :warning: **Disclaimer:** I wrote this program for fun. It should not be used for serious encryption as blowfish is suspectible to [birthday attacks](https://en.wikipedia.org/wiki/Birthday_attack).
 
-For sensitive data, consider using openssl and AES.
+For sensitive data, consider using openssl and AES. Additionally, this program was only tested on Linux, and is intended to be used with Bash.
 
 ## Installation
 
@@ -56,7 +56,7 @@ Encrypt a file input.txt using the key in filename.txt:
 ./encrypt -k filename.txt < input.txt
 ```
 
-Decrypt input.txt, while reading it in hex, and output hex:
+Decrypt input.txt, while reading it in hex, using the key in key.txt (read in ASCII) and output hex:
 ```sh
 ./encrypt -h -d < input.txt
 ```
