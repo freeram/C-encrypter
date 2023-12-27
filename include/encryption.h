@@ -1,5 +1,5 @@
-#ifndef ENCRYPT_H
-#define ENCRYPT_H
+#ifndef ENCRYPTION_H
+#define ENCRYPTION_H
 
 #include <stdlib.h>
 #include <stdint.h>
