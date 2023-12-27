@@ -1,6 +1,8 @@
+#include <stdio.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 #include "encryption.h"
 #include "filereader.h"
 #include "encoding.h"
@@ -8,19 +10,16 @@
 extern int optind, opterr, optopt;
 extern char *optarg;
 
-void getflags(int argc, char *argv[], int *gflag, int *dflag, int *hflag, char **keydir)
+void getflags(int argc, char *argv[], int *dflag, int *hflag, char **keydir)
 {
     int index;
     int c;
 
     opterr = 0;
 
-    while ((c = getopt(argc, argv, "gdhk:")) != -1)
+    while ((c = getopt(argc, argv, "dhk:")) != -1)
         switch (c)
         {
-        case 'g':
-            *gflag = 1;
-            break;
         case 'd':
             *dflag = 1;
             break;
@@ -64,7 +63,7 @@ int pad_buffer_pkcs5(uint8_t **buffer, size_t old_len, size_t new_len)
 
     *buffer = new_buffer;
 
-    return 0; // Success
+    return 0;
 }
 
 int depad_buffer_pkcs5(uint8_t **buffer, size_t *buffer_size)
@@ -103,25 +102,15 @@ int depad_buffer_pkcs5(uint8_t **buffer, size_t *buffer_size)
 
 int main(int argc, char *argv[])
 {
-    // Getting flags
-    int gflag = 0;       // -g: Generate a key flag
+    //// Getting flags
     int dflag = 0;       // -d: Decrypt flag
     int hflag = 0;       // -h: Input/Output in hex flag [except key]
     char *keydir = NULL; // -k: Get keydir from CLI flag [path to key file]
 
-    getflags(argc, argv, &gflag, &dflag, &hflag, &keydir);
+    getflags(argc, argv, &dflag, &hflag, &keydir);
+    //// (/Getting flags)
 
-    if (gflag && dflag)
-    {
-        printf("Error: Cannot generate key and decrypt at the same time. Exiting\n");
-        return 1;
-    }
-    if (gflag && (keydir != NULL))
-    {
-        printf("Error: Cannot generate key and parse key at the same time. Exiting\n");
-        return 1;
-    }
-
+    //// Getting the key
     uint8_t *key;
     size_t key_len;
 
@@ -151,9 +140,13 @@ int main(int argc, char *argv[])
         printf("Key length must not exceed 56 characters. Exiting\n");
         return 1;
     }
+    //// (/Getting the key)
 
+    //// Initializing blowfish
     blowfish_init(key, key_len);
+    //// (/Initializing blowfish)
 
+    //// Getting input
     uint8_t *buffer = NULL;
     size_t buffer_size;
 
@@ -205,22 +198,13 @@ int main(int argc, char *argv[])
         }
         if (pad_buffer_pkcs5(&buffer, old_size, buffer_size))
         {
-            printf("Error: realloc failure in pad_buffer. Exiting\n");
+            printf("Error: padding the buffer failed. Exiting\n");
             return 1;
         }
     }
+    //// (/Getting input)
 
-#ifdef DEBUG
-    printf("Buffer size: %ld ; Buffer size in bits: %ld\n", buffer_size, buffer_size * 8);
-
-    printf("Original buffer:\n");
-    for (size_t i = 0; i < buffer_size; i++)
-    {
-        printf("%02x ", buffer[i]);
-    }
-    printf("\n");
-#endif
-
+    //// Performing encryption/decryption
     if (dflag) // Decrypt flag
     {
         decrypt(buffer, buffer_size);
@@ -229,15 +213,10 @@ int main(int argc, char *argv[])
     {
         encrypt(buffer, buffer_size);
     }
+    //// (/Performing encryption/decryption)
 
-#ifdef DEBUG
-    printf("Modified buffer:\n");
-    for (size_t i = 0; i < buffer_size; i++)
-    {
-        printf("%02x ", buffer[i]);
-    }
-    printf("\nOutput:\n");
-#endif
+    //// Printing output
+
     // Our buffer is now in HEX
     // This outputs hex and quits (on hex flag)
     if (hflag)
@@ -259,7 +238,7 @@ int main(int argc, char *argv[])
         // Remove padding bytes
         if (depad_buffer_pkcs5(&buffer, &buffer_size))
         {
-            printf("Depading the buffer failed. Exiting\n");
+            printf("Error: depadding the buffer failed. Exiting\n");
             free(buffer);
             free(key);
             return 1;
@@ -283,6 +262,14 @@ int main(int argc, char *argv[])
 
     base64 = base64_encode(buffer, buffer_size, &base64_len);
 
+    if (base64 == NULL)
+    {
+        printf("Error: encoding base64 failed. Exiting\n");
+        free(buffer);
+        free(key);
+        return 1;
+    }
+
     // Printing base64 chars
     for (size_t i = 0; i < base64_len; i++)
     {
@@ -293,6 +280,8 @@ int main(int argc, char *argv[])
     free(buffer);
     free(key);
     free(base64);
+
+    //// (/Printing output)
 
     return 0;
 }
