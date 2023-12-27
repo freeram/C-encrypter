@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include "padding.h"
 #include "encryption.h"
 #include "filereader.h"
 #include "encoding.h"
@@ -47,70 +48,16 @@ void getflags(int argc, char *argv[], int *dflag, int *hflag, char **keydir)
         printf("Non-option argument %s\n", argv[index]);
 }
 
-int pad_buffer_pkcs5(uint8_t **buffer, size_t old_len, size_t new_len)
-{
-    uint8_t *new_buffer = realloc(*buffer, new_len);
-
-    if (!new_buffer)
-    {
-        perror("Realloc failed in pad_buffer_pkcs5");
-        return 1;
-    }
-
-    // Initialize the new portion of the buffer according to amount of bytes padded
-    // e.g. if 3 bytes must be padded, fill each with 0x03
-    memset(new_buffer + old_len, new_len - old_len, new_len - old_len);
-
-    *buffer = new_buffer;
-
-    return 0;
-}
-
-int depad_buffer_pkcs5(uint8_t **buffer, size_t *buffer_size)
-{
-    if (!buffer || !*buffer || !buffer_size || *buffer_size == 0)
-    {
-        perror("Invalid input in depad_buffer_pkcs5");
-        return 1;
-    }
-
-    size_t size = *buffer_size;
-    uint8_t padding_value = (*buffer)[size - 1]; // Get the last byte (padding value)
-
-    // Validate padding value
-    if (padding_value == 0 || padding_value > size)
-    {
-        perror("Invalid padding in depad_buffer_pkcs5");
-        return 1;
-    }
-
-    // Check if all padding bytes have the same value
-    for (size_t i = size - padding_value; i < size; i++)
-    {
-        if ((*buffer)[i] != padding_value)
-        {
-            perror("Padding bytes do not have same value in depad_buffer_pkcs5");
-            return 1;
-        }
-    }
-
-    // Adjust buffer size to remove padding
-    *buffer_size = size - padding_value;
-
-    return 0;
-}
-
 int main(int argc, char *argv[])
 {
-    //// Getting flags
+    // Getting flags
     int dflag = 0;       // -d: Decrypt flag
     int hflag = 0;       // -h: Input/Output in hex flag [except key]
     char *keydir = NULL; // -k: Get keydir from CLI flag [path to key file]
 
     getflags(argc, argv, &dflag, &hflag, &keydir);
-    //// (/Getting flags)
 
-    //// Getting the key
+    // Getting the key
     uint8_t *key;
     size_t key_len;
 
@@ -140,13 +87,12 @@ int main(int argc, char *argv[])
         printf("Key length must not exceed 56 characters. Exiting\n");
         return 1;
     }
-    //// (/Getting the key)
 
-    //// Initializing blowfish
+    // Initializing blowfish
     blowfish_init(key, key_len);
-    //// (/Initializing blowfish)
+    free(key);  // Key no longer needed
 
-    //// Getting input
+    // Getting input
     uint8_t *buffer = NULL;
     size_t buffer_size;
 
@@ -202,10 +148,9 @@ int main(int argc, char *argv[])
             return 1;
         }
     }
-    //// (/Getting input)
 
-    //// Performing encryption/decryption
-    if (dflag) // Decrypt flag
+    // Performing encryption/decryption
+    if (dflag)
     {
         decrypt(buffer, buffer_size);
     }
@@ -213,9 +158,8 @@ int main(int argc, char *argv[])
     {
         encrypt(buffer, buffer_size);
     }
-    //// (/Performing encryption/decryption)
 
-    //// Printing output
+    // Printing output
 
     // Our buffer is now in HEX
     // This outputs hex and quits (on hex flag)
@@ -228,7 +172,6 @@ int main(int argc, char *argv[])
         printf("\n");
 
         free(buffer);
-        free(key);
 
         return 0;
     }
@@ -240,7 +183,6 @@ int main(int argc, char *argv[])
         {
             printf("Error: depadding the buffer failed. Exiting\n");
             free(buffer);
-            free(key);
             return 1;
         }
 
@@ -251,7 +193,6 @@ int main(int argc, char *argv[])
         printf("\n");
 
         free(buffer);
-        free(key);
 
         return 0;
     }
@@ -261,12 +202,11 @@ int main(int argc, char *argv[])
     size_t base64_len;
 
     base64 = base64_encode(buffer, buffer_size, &base64_len);
+    free(buffer);
 
     if (base64 == NULL)
     {
         printf("Error: encoding base64 failed. Exiting\n");
-        free(buffer);
-        free(key);
         return 1;
     }
 
@@ -277,11 +217,7 @@ int main(int argc, char *argv[])
     }
     printf("\n");
 
-    free(buffer);
-    free(key);
     free(base64);
-
-    //// (/Printing output)
 
     return 0;
 }
