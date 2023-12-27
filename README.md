@@ -22,9 +22,8 @@ For sensitive data, consider using openssl and AES.
 
 | Flag &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;         | Description                                                                                   |
 |------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [no flags] | Encrypts a file provided in stdin with key provided in `key.txt`. `key.txt` must be in the same directory as the binary                                                                    |
-| `-g`       | Generates a new encryption key. When this flag is used, the program will create a new key and output it in a file. [WIP]                                                                   |
-| `-k <path>`| Specifies the path to the key file. If `-k` is unspecified, the program looks for key in `key.txt` in the current directory.                                                               |
+| [no flags] | Encrypts a file provided in stdin with key provided in `key.txt`. `key.txt` must be in the same directory as the binary.                                                                    |
+| `-k <filename>`| Specifies the name of the key file. If `-k` is unspecified, the program looks for key in `key.txt` in the current directory.                                                               |
 | `-d`       | Enables decryption mode. Use this flag to decrypt input using the specified key. If `-k` is unspecified, program looks for `key.txt` in the current directory.                             |
 | `-h`       | Enables hex Input/Output mode. Use this flag to encrypt/decrypt input using the specified key, but the input will be read in hex, and the output will be in hex.                      |
 
