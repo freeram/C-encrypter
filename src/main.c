@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
     // Initializing blowfish
     blowfish_init(key, key_len);
-    free(key);  // Key no longer needed
+    free(key); // Key no longer needed
 
     // Getting input
     uint8_t *buffer = NULL;
@@ -157,9 +157,21 @@ int main(int argc, char *argv[])
         encrypt(buffer, buffer_size);
     }
 
+    // Our buffer is now in HEX
+
+    // Remove padding bytes on decryption
+    if (dflag)
+    {
+        if (depad_buffer_pkcs5(&buffer, &buffer_size))
+        {
+            printf("Error: depadding the buffer failed. Exiting\n");
+            free(buffer);
+            return 1;
+        }
+    }
+
     // Printing output
 
-    // Our buffer is now in HEX
     // This outputs hex and quits (on hex flag)
     if (hflag)
     {
@@ -173,17 +185,9 @@ int main(int argc, char *argv[])
 
         return 0;
     }
-    // This outputs ASCII and quits (on decrypt flag)
+    // This outputs ASCII and quits (on decrypt and no hex flag)
     else if (dflag)
     {
-        // Remove padding bytes
-        if (depad_buffer_pkcs5(&buffer, &buffer_size))
-        {
-            printf("Error: depadding the buffer failed. Exiting\n");
-            free(buffer);
-            return 1;
-        }
-
         for (size_t i = 0; i < buffer_size; i++)
         {
             printf("%c", buffer[i]);
