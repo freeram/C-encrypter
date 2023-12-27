@@ -54,6 +54,7 @@ int pad_buffer_pkcs5(uint8_t **buffer, size_t old_len, size_t new_len)
 
     if (!new_buffer)
     {
+        perror("Realloc failed in pad_buffer_pkcs5");
         return 1;
     }
 
@@ -64,6 +65,40 @@ int pad_buffer_pkcs5(uint8_t **buffer, size_t old_len, size_t new_len)
     *buffer = new_buffer;
 
     return 0; // Success
+}
+
+int depad_buffer_pkcs5(uint8_t **buffer, size_t *buffer_size)
+{
+    if (!buffer || !*buffer || !buffer_size || *buffer_size == 0)
+    {
+        perror("Invalid input in depad_buffer_pkcs5");
+        return 1;
+    }
+
+    size_t size = *buffer_size;
+    uint8_t padding_value = (*buffer)[size - 1]; // Get the last byte (padding value)
+
+    // Validate padding value
+    if (padding_value == 0 || padding_value > size)
+    {
+        perror("Invalid padding in depad_buffer_pkcs5");
+        return 1;
+    }
+
+    // Check if all padding bytes have the same value
+    for (size_t i = size - padding_value; i < size; i++)
+    {
+        if ((*buffer)[i] != padding_value)
+        {
+            perror("Padding bytes do not have same value in depad_buffer_pkcs5");
+            return 1;
+        }
+    }
+
+    // Adjust buffer size to remove padding
+    *buffer_size = size - padding_value;
+
+    return 0;
 }
 
 int main(int argc, char *argv[])
@@ -117,35 +152,33 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-#ifdef DEBUG
-    printf("Key:\n");
-    for (size_t i = 0; i < key_len; i++)
-    {
-        printf("%c", key[i]);
-    }
-    printf("\n");
-
-    printf("Key in hex:\n");
-    for (size_t i = 0; i < key_len; i++)
-    {
-        printf("%02x ", key[i]);
-    }
-    printf("\n");
-
-    printf("Key len: %ld\n", key_len);
-#endif
-
     blowfish_init(key, key_len);
 
     uint8_t *buffer = NULL;
     size_t buffer_size;
-    
+
+    // Input read in hex
     if (hflag)
     {
         buffer = read_stdin_data_hex(&buffer_size);
-    } else
+    }
+    // Input for decryption read in chars, decoded from base64
+    else if (dflag)
     {
-        buffer = read_stdin_data(&buffer_size);
+        char *base64 = NULL;
+        base64 = read_stdin_data_char(&buffer_size);
+        if (base64 == NULL)
+        {
+            printf("Error: reading stdin chars failed. Exiting\n");
+            return 1;
+        }
+        buffer = base64_decode(base64, &buffer_size);
+        free(base64);
+    }
+    // Input for encryption read in uint8_t
+    else
+    {
+        buffer = read_stdin_data_uint8t(&buffer_size);
     }
 
     if (buffer == NULL)
@@ -186,22 +219,28 @@ int main(int argc, char *argv[])
         printf("%02x ", buffer[i]);
     }
     printf("\n");
-
-    printf("Modified buffer:\n");
 #endif
 
-    if (dflag)  // Decrypt flag
+    if (dflag) // Decrypt flag
     {
         decrypt(buffer, buffer_size);
     }
-    else 
+    else
     {
         encrypt(buffer, buffer_size);
     }
 
+#ifdef DEBUG
+    printf("Modified buffer:\n");
+    for (size_t i = 0; i < buffer_size; i++)
+    {
+        printf("%02x ", buffer[i]);
+    }
+    printf("\nOutput:\n");
+#endif
     // Our buffer is now in HEX
-    // This outputs hex and quits
-    if (hflag) 
+    // This outputs hex and quits (on hex flag)
+    if (hflag)
     {
         for (size_t i = 0; i < buffer_size; i++)
         {
@@ -214,14 +253,37 @@ int main(int argc, char *argv[])
 
         return 0;
     }
+    // This outputs ASCII and quits (on decrypt flag)
+    else if (dflag)
+    {
+        // Remove padding bytes
+        if (depad_buffer_pkcs5(&buffer, &buffer_size))
+        {
+            printf("Depading the buffer failed. Exiting\n");
+            free(buffer);
+            free(key);
+            return 1;
+        }
+
+        for (size_t i = 0; i < buffer_size; i++)
+        {
+            printf("%c", buffer[i]);
+        }
+        printf("\n");
+
+        free(buffer);
+        free(key);
+
+        return 0;
+    }
 
     // This gets a base64 representation of our buffer
     char *base64 = NULL;
     size_t base64_len;
-    
+
     base64 = base64_encode(buffer, buffer_size, &base64_len);
 
-    // Printing base64
+    // Printing base64 chars
     for (size_t i = 0; i < base64_len; i++)
     {
         printf("%c", base64[i]);
